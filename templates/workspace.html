@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Operations Workspace</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+</head>
+<body>
+    <div class="app-shell" id="app-shell">
+        <button class="mobile-nav-backdrop" id="mobile-nav-backdrop" type="button" aria-label="Close navigation"></button>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-mark">SO</div>
+                <div>
+                    <span class="eyebrow">Workspace</span>
+                    <h1>Service Operations</h1>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a class="nav-link {{ 'active' if active_page == 'overview' else '' }}" href="{{ url_for('overview', user_id=active_user_id) }}">
+                    <span class="nav-icon">OV</span>
+                    <div>
+                        <strong>Overview</strong>
+                        <small>Pipeline, metrics, intake status</small>
+                    </div>
+                </a>
+                <a class="nav-link {{ 'active' if active_page == 'leads' else '' }}" href="{{ url_for('leads', user_id=active_user_id) }}">
+                    <span class="nav-icon">LD</span>
+                    <div>
+                        <strong>Leads</strong>
+                        <small>Customers, status, lead details</small>
+                    </div>
+                </a>
+                <a class="nav-link {{ 'active' if active_page == 'inbox' else '' }}" href="{{ url_for('inbox', user_id=active_user_id) }}">
+                    <span class="nav-icon">IN</span>
+                    <div>
+                        <strong>Inbox</strong>
+                        <small>WhatsApp lead conversations</small>
+                    </div>
+                </a>
+                <a class="nav-link {{ 'active' if active_page == 'knowledge' else '' }}" href="{{ url_for('knowledge', user_id=active_user_id) }}">
+                    <span class="nav-icon">KB</span>
+                    <div>
+                        <strong>Knowledge</strong>
+                        <small>Service docs, SOPs, price files</small>
+                    </div>
+                </a>
+                <a class="nav-link {{ 'active' if active_page == 'automation' else '' }}" href="{{ url_for('automation', user_id=active_user_id) }}">
+                    <span class="nav-icon">WA</span>
+                    <div>
+                        <strong>Automation</strong>
+                        <small>Assistant controls and prompts</small>
+                    </div>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-panel">
+            <header class="mobile-topbar">
+                <button class="hamburger-button" id="sidebar-toggle" type="button" aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <div class="mobile-topbar-copy">
+                    <span class="eyebrow">Workspace</span>
+                    <strong>Service Operations</strong>
+                </div>
+            </header>
+            <header class="topbar">
+                <div class="topbar-copy">
+                    <span class="eyebrow">{{ active_page|title }}</span>
+                    <h2>
+                        {% if active_page == 'overview' %}Operational Overview{% endif %}
+                        {% if active_page == 'leads' %}Lead Directory{% endif %}
+                        {% if active_page == 'inbox' %}Lead Inbox{% endif %}
+                        {% if active_page == 'knowledge' %}Knowledge Center{% endif %}
+                        {% if active_page == 'automation' %}Automation Controls{% endif %}
+                    </h2>
+                    <p>
+                        {% if active_page == 'overview' %}Track lead intake, connection readiness, and the movement from first inquiry to a qualified operational handoff.{% endif %}
+                        {% if active_page == 'leads' %}Browse all captured leads, see their latest activity, and open any conversation with one click.{% endif %}
+                        {% if active_page == 'inbox' %}Review conversations, inspect extracted business details, and switch from bot-led handling to manual support when needed.{% endif %}
+                        {% if active_page == 'knowledge' %}Manage the documents, business hours, and response rules that shape how the assistant qualifies, answers, and routes incoming requests.{% endif %}
+                        {% if active_page == 'automation' %}Connect WhatsApp, manage reply behavior, and control the assistant settings used in active conversations.{% endif %}
+                    </p>
+                </div>
+                <div class="topbar-actions">
+                    <div class="status-pill {{ 'live' if snapshot.is_bot_running else 'paused' }}">
+                        <span class="status-dot"></span>
+                        {{ 'Intake Live' if snapshot.is_bot_running else 'Intake Paused' }}
+                    </div>
+                    <div class="status-pill {{ 'live' if snapshot.reply_mode == 'automatic' else 'paused' }}" id="reply-mode-pill">
+                        <span class="status-dot"></span>
+                        {{ 'Automatic Replies' if snapshot.reply_mode == 'automatic' else 'Manual Support Mode' }}
+                    </div>
+                    <div class="status-pill {{ 'live' if whatsapp_status.connected else 'paused' }}" id="whatsapp-connection-pill">
+                        <span class="status-dot"></span>
+                        {{ 'WhatsApp Connected' if whatsapp_status.connected else 'WhatsApp Not Connected' }}
+                    </div>
+                </div>
+            </header>
+
+            <section class="page-rail compact-rail">
+                {% if active_page == 'overview' %}
+                <article class="rail-card accent">
+                    <span class="panel-label">Overview</span>
+                    <strong id="overview-status-summary">{{ snapshot.unique_user_count }} active leads</strong>
+                    <p id="overview-status-copy">{{ 'WhatsApp is connected and ready.' if whatsapp_status.connected else 'Connect WhatsApp to start live intake.' }}</p>
+                    <div class="chip-cloud compact-top">
+                        <span class="chip">{{ snapshot.stage_counts.new or 0 }} New</span>
+                        <span class="chip">{{ snapshot.stage_counts.qualified or 0 }} Qualified</span>
+                        <span class="chip">{{ snapshot.stage_counts.follow_up or 0 }} Follow Up</span>
+                        <span class="chip">{{ snapshot.stage_counts.won or 0 }} Won</span>
+                    </div>
+                </article>
+                {% endif %}
+                {% if active_page == 'inbox' %}
+                <article class="rail-card accent">
+                    <span class="panel-label">Inbox Status</span>
+                    <strong>{{ active_conversation.display_name if active_conversation else 'No lead selected' }}</strong>
+                    <p id="inbox-status-copy">{{ 'Human replies are active.' if snapshot.reply_mode == 'manual' else 'AI replies are active.' }}</p>
+                </article>
+                {% endif %}
+                {% if active_page == 'leads' %}
+                <article class="rail-card accent">
+                    <span class="panel-label">Lead Status</span>
+                    <strong>{{ conversations|length }} leads tracked</strong>
+                    <p>Open any lead to review the conversation, summary, and next step.</p>
+                </article>
+                {% endif %}
+                {% if active_page == 'knowledge' %}
+                <article class="rail-card accent">
+                    <span class="panel-label">Knowledge Base</span>
+                    <strong>{{ knowledge_files|length }} files indexed</strong>
+                    <p>Upload SOPs, pricing, and FAQs that the assistant should use.</p>
+                </article>
+                {% endif %}
+                {% if active_page == 'automation' %}
+                <article class="rail-card accent">
+                    <span class="panel-label">Automation Status</span>
+                    <strong id="automation-status-summary">{{ 'Connected' if whatsapp_status.connected else 'Not connected' }} | {{ 'Automatic' if snapshot.reply_mode == 'automatic' else 'Manual' }}</strong>
+                    <p id="automation-status-copy">{{ snapshot.availability.status_text }}</p>
+                </article>
+                {% endif %}
+            </section>
+
+            {% if active_page == 'overview' %}
+            <section class="hero-grid">
+                <article class="hero-card">
+                    <div class="hero-split">
+                        <div>
+                            <span class="eyebrow">WhatsApp-first Intake</span>
+                            <h3>Convert incoming conversations into structured, qualified leads</h3>
+                            <p>
+                                The assistant captures the conversation, identifies the inquiry type,
+                                highlights missing information, and prepares the next action for your team.
+                            </p>
+                            <div class="feature-row">
+                                <span>Lead qualification</span>
+                                <span>Intent detection</span>
+                                <span>Context capture</span>
+                                <span>Team handoff</span>
+                            </div>
+                        </div>
+                        <div class="hero-aside">
+                            <div class="hero-stat">
+                                <span class="panel-label">Current setup</span>
+                                <strong>{{ 'Live intake' if snapshot.is_bot_running else 'Paused intake' }}</strong>
+                                <p>{{ 'Manual support enabled' if snapshot.reply_mode == 'manual' else 'Automatic replies enabled' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="cta-strip">
+                        <a class="primary-button cta-link" href="{{ url_for('automation') }}">Connect WhatsApp</a>
+                        <a class="soft-button cta-link" href="{{ url_for('inbox') }}">Open Inbox</a>
+                    </div>
+                </article>
+                <article class="summary-card">
+                    <div class="summary-block">
+                        <span class="panel-label">Primary Flow</span>
+                        <strong>Inquiry to qualification to quote to scheduling</strong>
+                    </div>
+                    <div class="summary-block">
+                        <span class="panel-label">Knowledge Assets</span>
+                        <strong>{{ snapshot.knowledge_file_count }} indexed references</strong>
+                    </div>
+                </article>
+            </section>
+
+            <section class="content-grid two-column">
+                <article class="panel connect-panel">
+                    <div class="panel-header">
+                        <h3>Connect WhatsApp</h3>
+                        <span class="panel-note">Browser QR</span>
+                    </div>
+                    <div class="connect-steps compact">
+                        <div class="connect-step">
+                            <strong>Start session</strong>
+                            <p>Launch the connector from the browser.</p>
+                        </div>
+                        <div class="connect-step">
+                            <strong>Scan QR</strong>
+                            <p>Use Linked Devices in WhatsApp to pair your phone.</p>
+                        </div>
+                    </div>
+                    <div class="cta-strip">
+                        <button class="primary-button" id="start-whatsapp-cta-overview">Connect WhatsApp</button>
+                        <a class="soft-button cta-link" href="{{ url_for('automation') }}">Open Connection Center</a>
+                    </div>
+                    <div class="qr-panel" id="wa-qr-panel-overview">
+                        <div class="qr-frame" id="wa-qr-frame-overview">
+                            {% if whatsapp_status.qr_path %}
+                            <img id="wa-qr-image-overview" src="{{ url_for('static', filename='generated/whatsapp-qr.svg', v=whatsapp_status.last_event_at or 0) }}" alt="WhatsApp QR code">
+                            {% else %}
+                            <div class="empty-block">Click Connect WhatsApp to generate the QR here.</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </article>
+                <article class="panel">
+                    <div class="panel-header">
+                        <h3>How It Works</h3>
+                        <span class="panel-note">Simple flow</span>
+                    </div>
+                    <div class="timeline">
+                        <div class="timeline-step">
+                            <strong>1. Connect account</strong>
+                            <p>Open the QR in the UI and pair the WhatsApp device.</p>
+                        </div>
+                        <div class="timeline-step">
+                            <strong>2. Choose reply mode</strong>
+                            <p>Automatic for bot-led responses or Manual for admin handling.</p>
+                        </div>
+                        <div class="timeline-step">
+                            <strong>3. Review inbox</strong>
+                            <p>Incoming leads appear in the inbox with extracted conversation details.</p>
+                        </div>
+                    </div>
+                </article>
+            </section>
+
+            <section class="metrics-grid compact-metrics">
+                <article class="metric-card">
+                    <span class="panel-label">Open Leads</span>
+                    <strong>{{ snapshot.unique_user_count }}</strong>
+                    <p>Tracked conversations currently available for review.</p>
+                </article>
+                <article class="metric-card">
+                    <span class="panel-label">Messages Processed</span>
+                    <strong>{{ snapshot.total_messages }}</strong>
+                    <p>Customer and assistant exchanges stored in the pipeline.</p>
+                </article>
+                <article class="metric-card">
+                    <span class="panel-label">Qualified</span>
+                    <strong>{{ snapshot.stage_counts.qualified or 0 }}</strong>
+                    <p>Leads with enough detail to move toward quote or booking.</p>
+                </article>
+                <article class="metric-card">
+                    <span class="panel-label">Follow Up</span>
+                    <strong>{{ snapshot.stage_counts.follow_up or 0 }}</strong>
+                    <p>Conversations waiting on pricing, scheduling, or customer response.</p>
+                </article>
+                <article class="metric-card">
+                    <span class="panel-label">Hot Leads</span>
+                    <strong>{{ snapshot.hot_leads }}</strong>
+                    <p>Highest-intent conversations that should be handled first.</p>
+                </article>
+                <article class="metric-card">
+                    <span class="panel-label">Quote Ready</span>
+                    <strong>{{ snapshot.quote_ready_leads }}</strong>
+                    <p>Leads with enough context to move toward a quote or visit.</p>
+                </article>
+                <article class="metric-card">
+                    <span class="panel-label">Open Tasks</span>
+                    <strong>{{ snapshot.open_tasks }}</strong>
+                    <p>Follow-up actions still pending across the workspace.</p>
+                </article>
+            </section>
+
+            <section class="content-grid two-column">
+                <article class="panel">
+                    <div class="panel-header">
+                        <h3>Recent Leads</h3>
+                        <span class="panel-note">Latest activity</span>
+                    </div>
+                    <div class="lead-list">
+                        {% for conversation in recent_conversations %}
+                        <a class="lead-row" href="{{ url_for('inbox', user_id=conversation.user_id) }}">
+                            <div>
+                                <strong>{{ conversation.display_name }}</strong>
+                                {% if conversation.display_name != conversation.user_id %}
+                                <span>{{ conversation.user_id }}</span>
+                                {% endif %}
+                                <span>{{ conversation.stage_label }} | {{ conversation.message_count }} messages</span>
+                                <span>{{ conversation.score_band }} | Score {{ conversation.lead_score }}</span>
+                            </div>
+                            <small>{{ conversation.latest_timestamp|datetimeformat }}</small>
+                        </a>
+                        {% else %}
+                        <div class="empty-block">No leads captured yet.</div>
+                        {% endfor %}
+                    </div>
+                </article>
+                <article class="panel">
+                    <div class="panel-header">
+                        <h3>Workflow</h3>
+                        <span class="panel-note">Operational sequence</span>
+                    </div>
+                    <div class="timeline">
+                        <div class="timeline-step">
+                            <strong>1. Capture inquiry</strong>
+                            <p>Customer starts a WhatsApp conversation or requests a quote.</p>
+                        </div>
+                        <div class="timeline-step">
+                            <strong>2. Extract job details</strong>
+                            <p>Assistant identifies category, location, timing, urgency, and missing context.</p>
+                        </div>
+                        <div class="timeline-step">
+                            <strong>3. Qualify for quote</strong>
+                            <p>Missing details are highlighted before sending to sales, support, or operations.</p>
+                        </div>
+                        <div class="timeline-step">
+                            <strong>4. Hand off to operations</strong>
+                            <p>Ready leads move toward the right next step for that business workflow.</p>
+                        </div>
+                    </div>
+                </article>
+            </section>
+            {% endif %}
+
+            {% if active_page == 'leads' %}
+            <section class="content-grid two-column">
+                <article class="panel">
+                    <div class="panel-header">
+                        <h3>All Leads</h3>
+                        <span class="panel-note">{{ conversations|length }} contacts</span>
+                    </div>
+                    <div class="lead-list">
+                        {% for conversation in conversations %}
+                        <a class="lead-row {{ 'active' if conversation.user_id == active_user_id else '' }}" href="{{ url_for('leads', user_id=conversation.user_id) }}">
+                            <div>
+                                <strong>{{ conversation.display_name }}</strong>
+                                {% if conversation.display_name != conversation.user_id %}
+                                <span>{{ conversation.user_id }}</span>
+                                {% endif %}
+                                <span>{{ conversation.stage_label }} | {{ conversation.message_count }} messages</span>
+                                <span>{{ conversation.score_band }} | Score {{ conversation.lead_score }}</span>
+                                {% if conversation.tags %}
+                                <div class="chip-cloud row-chips">
+                                    {% for tag in conversation.tags[:3] %}
+                                    <span class="chip">{{ tag.replace('_', ' ') }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <small>{{ conversation.latest_timestamp|datetimeformat }}</small>
+                        </a>
+                        {% else %}
+                        <div class="empty-block">No leads available.</div>
+                        {% endfor %}
+                    </div>
+                </article>
+
+                <article class="panel">
+                    <div class="panel-header">
+                        <h3>Lead Snapshot</h3>
+                        <span class="panel-note">Selected lead</span>
+                    </div>
+                    {% if active_user_id %}
+                    <div class="settings-stack lead-management-stack">
+                        <label>
+                            <span>Lead Display Name</span>
+                            <input id="lead-display-name" type="text" value="{{ active_conversation.display_name if active_conversation else active_user_id }}" placeholder="Customer name">
+                        </label>
+                        <div class="button-row">
+                            <button class="primary-button" id="save-lead-name" data-user-id="{{ active_user_id }}" type="button">Save Lead Name</button>
+                        </div>
+                        <label>
+                            <span>Lead Stage</span>
+                            <select id="lead-stage" data-user-id="{{ active_user_id }}">
+                                {% for option in snapshot.lead_stage_options %}
+                                <option value="{{ option.value }}" {{ 'selected' if active_lead_workspace.meta.stage == option.value else '' }}>{{ option.label }}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+                        <div class="tag-manager">
+                            <span class="panel-label">Lead Tags</span>
+                            <div class="chip-cloud" id="lead-tags">
+                                {% for tag in active_lead_workspace.tags %}
+                                <button class="chip tag-chip" type="button" data-tag="{{ tag }}">{{ tag.replace('_', ' ') }}</button>
+                                {% endfor %}
+                            </div>
+                            <div class="tag-entry">
+                                <input id="lead-tag-input" type="text" placeholder="Add tag like vip, repeat_customer, site_visit">
+                                <button class="soft-button" id="add-lead-tag" data-user-id="{{ active_user_id }}" type="button">Add Tag</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="intake-grid">
+                        <div class="data-card">
+                            <span class="panel-label">Lead Name</span>
+                            <strong>{{ active_conversation.display_name if active_conversation else active_user_id }}</strong>
+                        </div>
+                        <div class="data-card">
+                            <span class="panel-label">WhatsApp</span>
+                            <strong>{{ active_user_id }}</strong>
+                        </div>
+                        <div class="data-card">
+                            <span class="panel-label">Messages</span>
+                            <strong>{{ active_conversation.message_count if active_conversation else 0 }}</strong>
+                        </div>
+                        <div class="data-card">
+                            <span class="panel-label">Current Stage</span>
+                            <strong id="lead-stage-badge">{{ active_conversation.stage_label if active_conversation else 'New' }}</strong>
+                        </div>
+                        <div class="data-card">
+                            <span class="panel-label">Lead Score</span>
+                            <strong id="lead-score-badge">{{ active_lead_workspace.score.score if active_lead_workspace.score else 0 }} / 100</strong>
+                            <p>{{ active_lead_workspace.score.band if active_lead_workspace.score else 'Cold' }}</p>
+                        </div>
+                        <div class="data-card">
+                            <span class="panel-label">Last Activity</span>
+                            <strong>{{ active_conversation.latest_timestamp|datetimeformat if active_conversation else '-' }}</strong>
+                        </div>
+                        <div class="data-card full">
+                            <span class="panel-label">Next Step</span>
+                            <p>{{ active_intake.next_action if active_intake else 'Open this lead in Inbox to continue the conversation.' }}</p>
+                        </div>
+                        <div class="data-card full">
+                            <span class="panel-label">CRM Readiness</span>
+                            <p>{{ active_lead_workspace.readiness.readiness_label if active_lead_workspace.readiness else 'Waiting for intake' }} | {{ active_lead_workspace.readiness.next_task if active_lead_workspace.readiness else 'Review lead' }} | {{ active_lead_workspace.readiness.due_label if active_lead_workspace.readiness else 'Today' }}</p>
+                        </div>
+                    </div>
+                    <div class="panel-subsection">
+                        <div class="panel-header">
+                            <h3>Internal Notes</h3>
+                            <span class="panel-note">{{ active_lead_workspace.notes|length }} notes</span>
+                        </div>
+                        <label>
+                            <span>Add Note</span>
+                            <textarea id="lead-note-input" rows="4" placeholder="Add an internal handoff note, pricing reminder, or follow-up context..."></textarea>
+                        </label>
+                        <div class="button-row">
+                            <button class="primary-button" id="add-lead-note" data-user-id="{{ active_user_id }}" type="button">Save Note</button>
+                        </div>
+                        <div class="notes-list" id="lead-notes">
+                            {% for note in active_lead_workspace.notes %}
+                            <div class="note-card">
+                                <strong>{{ note.created_at|datetimeformat }}</strong>
+                                <p>{{ note.note }}</p>
+                            </div>
+                            {% else %}
+                            <div class="empty-block">No internal notes saved for this lead yet.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="panel-subsection">
+                        <div class="panel-header">
+                            <h3>Follow-Up Tasks</h3>
+                            <span class="panel-note">{{ active_lead_workspace.tasks|length }} items</span>
+                        </div>
+                        <div class="tag-entry">
+                            <input id="lead-task-input" type="text" placeholder="Add task like Send quote or Arrange site visit">
+                            <button class="soft-button" id="add-lead-task" data-user-id="{{ active_user_id }}" type="button">Add Task</button>
+                        </div>
+                        <div class="notes-list" id="lead-tasks">
+                            {% for task in active_lead_workspace.tasks %}
+                            <div class="note-card task-card {{ 'task-done' if task.status == 'done' else '' }}">
+                                <strong>{{ task.title }}</strong>
+                                <p>{{ task.due_label or 'Today' }} | {{ 'Completed' if task.status == 'done' else 'Open' }}</p>
+                                {% if task.status == 'open' %}
+                                <button class="soft-button task-toggle" type="button" data-user-id="{{ active_user_id }}" data-task-id="{{ task.id }}" data-status="done">Mark Done</button>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <div class="empty-block">No follow-up tasks for this lead yet.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="cta-strip">
+                        <a class="primary-button cta-link" href="{{ url_for('inbox', user_id=active_user_id) }}">Open In Inbox</a>
+                        <a class="soft-button cta-link" href="{{ url_for('automation', user_id=active_user_id) }}">Open Automation</a>
+                    </div>
+                    {% else %}
+                    <div class="empty-block">Select a lead to view its details.</div>
+                    {% endif %}
+                </article>
+            </section>
+            {% endif %}
+
+            {% if active_page == 'inbox' %}
+            <section class="workspace-grid">
+                <article class="panel conversation-panel">
+                    <div class="panel-header">
+                        <h3>Selected Conversation</h3>
+                        <span class="panel-note">Live lead thread</span>
+                    </div>
+                    <div class="conversation-meta">
+                        <div class="data-card">
+                            <span class="panel-label">Selected Lead</span>
+                            <strong id="selected-lead-title">{{ active_conversation.display_name if active_conversation else 'No lead selected' }}</strong>
+                        </div>
+                        <div class="data-card">
+                            <span class="panel-label">Reply Routing</span>
+                            <strong id="selected-lead-mode">{{ 'AI Replies' if snapshot.reply_mode == 'automatic' else 'Human Replies' }}</strong>
+                        </div>
+                        <div class="data-card">
+                            <span class="panel-label">Lead Stage</span>
+                            <strong id="selected-lead-stage">{{ active_conversation.stage_label if active_conversation else 'New' }}</strong>
+                        </div>
+                        <div class="data-card">
+                            <span class="panel-label">Lead Score</span>
+                            <strong id="selected-lead-score">{{ active_lead_workspace.score.score if active_lead_workspace.score else 0 }} / 100</strong>
+                        </div>
+                    </div>
+
+                    <div id="demo-chat" class="chat-surface">
+                        {% for message in active_messages %}
+                        <div class="message {{ 'assistant' if message.from_me else 'customer' }}">
+                            <span class="message-role">{{ 'Service Desk' if message.from_me else (active_conversation.display_name if active_conversation else active_user_id) }}</span>
+                            <p>{{ message.message_content }}</p>
+                        </div>
+                        {% else %}
+                        <div class="empty-block">Select a lead to review its messages here.</div>
+                        {% endfor %}
+                    </div>
+                </article>
+
+                <div class="stack-column">
+                    <article class="panel">
+                        <div class="panel-header">
+                            <h3>Lead Summary</h3>
+                            <span class="panel-note">Dynamic business context</span>
+                        </div>
+                        {% if active_user_id %}
+                        <div class="inline-controls">
+                            <label>
+                                <span>Lead Display Name</span>
+                                <input id="inbox-lead-display-name" type="text" value="{{ active_conversation.display_name if active_conversation else active_user_id }}">
+                            </label>
+                            <label>
+                                <span>Lead Stage</span>
+                                <select id="inbox-lead-stage" data-user-id="{{ active_user_id }}">
+                                    {% for option in snapshot.lead_stage_options %}
+                                    <option value="{{ option.value }}" {{ 'selected' if active_lead_workspace.meta.stage == option.value else '' }}>{{ option.label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </label>
+                            <div class="button-row single-action">
+                                <button class="primary-button" id="inbox-save-lead-name" data-user-id="{{ active_user_id }}" type="button">Save Name</button>
+                            </div>
+                        </div>
+                        <div class="chip-cloud" id="inbox-lead-tags">
+                            {% for tag in active_lead_workspace.tags %}
+                            <span class="chip">{{ tag.replace('_', ' ') }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <div class="data-card full crm-banner">
+                            <span class="panel-label">CRM Insight</span>
+                            <p id="crm-readiness-banner">{{ active_lead_workspace.readiness.readiness_label if active_lead_workspace.readiness else 'Waiting for intake' }} | {{ active_lead_workspace.readiness.next_task if active_lead_workspace.readiness else 'Review lead' }} | {{ active_lead_workspace.readiness.due_label if active_lead_workspace.readiness else 'Today' }}</p>
+                        </div>
+                        <div class="intake-grid">
+                            <div class="data-card" id="card-intake-service" {% if not active_intake or not active_intake.service_category %}style="display:none"{% endif %}>
+                                <span class="panel-label">Detected Category</span>
+                                <strong id="intake-service">{{ active_intake.service_category if active_intake else '-' }}</strong>
+                            </div>
+                            <div class="data-card" id="card-intake-readiness" {% if not active_intake or not active_intake.quote_readiness %}style="display:none"{% endif %}>
+                                <span class="panel-label">Qualification</span>
+                                <strong id="intake-readiness">{{ active_intake.quote_readiness if active_intake else '-' }}</strong>
+                            </div>
+                            <div class="data-card" id="card-intake-location" {% if not active_intake or not active_intake.location %}style="display:none"{% endif %}>
+                                <span class="panel-label">Location / Region</span>
+                                <strong id="intake-location">{{ active_intake.location if active_intake else '-' }}</strong>
+                            </div>
+                            <div class="data-card" id="card-intake-urgency" {% if not active_intake or not active_intake.urgency %}style="display:none"{% endif %}>
+                                <span class="panel-label">Priority</span>
+                                <strong id="intake-urgency">{{ active_intake.urgency if active_intake else '-' }}</strong>
+                            </div>
+                            <div class="data-card" id="card-intake-property" {% if not active_intake or not active_intake.property_type %}style="display:none"{% endif %}>
+                                <span class="panel-label">Context Type</span>
+                                <strong id="intake-property">{{ active_intake.property_type if active_intake else '-' }}</strong>
+                            </div>
+                            <div class="data-card" id="card-intake-visit" {% if not active_intake or not active_intake.preferred_visit_time %}style="display:none"{% endif %}>
+                                <span class="panel-label">Preferred Timing</span>
+                                <strong id="intake-visit">{{ active_intake.preferred_visit_time if active_intake else '-' }}</strong>
+                            </div>
+                            <div class="data-card" id="card-intake-budget" {% if not active_intake or not active_intake.budget_signal %}style="display:none"{% endif %}>
+                                <span class="panel-label">Budget Signal</span>
+                                <strong id="intake-budget">{{ active_intake.budget_signal if active_intake else '-' }}</strong>
+                            </div>
+                            <div class="data-card" id="card-intake-name" {% if not active_intake or not active_intake.customer_name %}style="display:none"{% endif %}>
+                                <span class="panel-label">Contact Name</span>
+                                <strong id="intake-name">{{ active_intake.customer_name if active_intake else '-' }}</strong>
+                            </div>
+                            <div class="data-card full">
+                                <span class="panel-label">Conversation Summary</span>
+                                <p id="intake-summary">{{ active_intake.issue_summary if active_intake else 'No inquiry analyzed yet.' }}</p>
+                            </div>
+                            <div class="data-card full">
+                                <span class="panel-label">Missing Inputs</span>
+                                <div id="intake-missing" class="chip-cloud">
+                                    {% if active_intake and active_intake.missing_details %}
+                                        {% for item in active_intake.missing_details %}
+                                        <span class="chip warn">{{ item }}</span>
+                                        {% endfor %}
+                                    {% else %}
+                                        <span class="chip ok">No blockers yet</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="data-card full">
+                                <span class="panel-label">Recommended Next Step</span>
+                                <p id="intake-next-action">{{ active_intake.next_action if active_intake else 'Start a conversation to produce the first intake summary.' }}</p>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="panel">
+                        <div class="panel-header">
+                            <h3>Lead Queue</h3>
+                            <span class="panel-note">{{ conversations|length }} leads</span>
+                        </div>
+                        <div class="lead-list">
+                            {% for conversation in conversations %}
+                            <a class="lead-row {{ 'active' if conversation.user_id == active_user_id else '' }}" href="{{ url_for('inbox', user_id=conversation.user_id) }}">
+                                <div>
+                                    <strong>{{ conversation.display_name }}</strong>
+                                    {% if conversation.display_name != conversation.user_id %}
+                                    <span>{{ conversation.user_id }}</span>
+                                    {% endif %}
+                                    <span>{{ conversation.stage_label }} | {{ conversation.message_count }} messages</span>
+                                    <span>{{ conversation.score_band }} | Score {{ conversation.lead_score }}</span>
+                                </div>
+                                <small>{{ conversation.latest_timestamp|datetimeformat }}</small>
+                            </a>
+                            {% else %}
+                            <div class="empty-block">No leads available.</div>
+                            {% endfor %}
+                        </div>
+                        {% if active_user_id %}
+                        <button class="danger-button" id="reset-conversation" data-user-id="{{ active_user_id }}">Clear Selected Lead</button>
+                        {% endif %}
+                    </article>
+
+                    <article class="panel">
+                        <div class="panel-header">
+                            <h3>Reply Handoff</h3>
+                            <span class="panel-note">AI or human</span>
+                        </div>
+                        <div class="reply-toggle-card">
+                            <div class="segmented-toggle" id="inbox-reply-toggle">
+                                <button class="{{ 'primary-button' if snapshot.reply_mode == 'automatic' else 'soft-button' }}" id="inbox-mode-automatic" type="button">AI Replies</button>
+                                <button class="{{ 'primary-button' if snapshot.reply_mode == 'manual' else 'soft-button' }}" id="inbox-mode-manual" type="button">Human Replies</button>
+                            </div>
+                            <p class="helper-text" id="support-mode-text">
+                                {{ 'The bot is currently replying automatically. Switch to human replies to take over the conversation yourself.' if snapshot.reply_mode == 'automatic' else 'Human replies are active. Messages from this panel go directly to WhatsApp.' }}
+                            </p>
+                        </div>
+                        <label>
+                            <span>Selected Lead</span>
+                            <input id="support-user-id" type="text" value="{{ active_user_id or '' }}" readonly>
+                        </label>
+                        <div class="button-row">
+                            <button class="soft-button" id="send-ai-reply">Send AI Reply</button>
+                        </div>
+                        <label>
+                            <span>Human Reply</span>
+                            <textarea id="support-message" rows="5" placeholder="Type a manual support reply here..."></textarea>
+                        </label>
+                        <button class="primary-button" id="send-support-reply">Send Human Reply</button>
+                        <p class="helper-text" id="support-send-note">Uses the active WhatsApp session when Human Replies is active.</p>
+                    </article>
+                    {% if active_user_id %}
+                    <article class="panel">
+                        <div class="panel-header">
+                            <h3>Internal Notes</h3>
+                            <span class="panel-note">{{ active_lead_workspace.notes|length }} notes</span>
+                        </div>
+                        <label>
+                            <span>Add Note</span>
+                            <textarea id="inbox-lead-note-input" rows="4" placeholder="Add private lead context for the team..."></textarea>
+                        </label>
+                        <button class="primary-button" id="inbox-add-lead-note" data-user-id="{{ active_user_id }}" type="button">Save Note</button>
+                        <div class="notes-list" id="inbox-lead-notes">
+                            {% for note in active_lead_workspace.notes %}
+                            <div class="note-card">
+                                <strong>{{ note.created_at|datetimeformat }}</strong>
+                                <p>{{ note.note }}</p>
+                            </div>
+                            {% else %}
+                            <div class="empty-block">No internal notes saved for this lead yet.</div>
+                            {% endfor %}
+                        </div>
+                    </article>
+                    {% if active_user_id %}
+                    <article class="panel">
+                        <div class="panel-header">
+                            <h3>Follow-Up Tasks</h3>
+                            <span class="panel-note">{{ active_lead_workspace.tasks|length }} tasks</span>
+                        </div>
+                        <div class="tag-entry">
+                            <input id="inbox-lead-task-input" type="text" placeholder="Add task like Call back customer">
+                            <button class="soft-button" id="inbox-add-lead-task" data-user-id="{{ active_user_id }}" type="button">Add Task</button>
+                        </div>
+                        <div class="notes-list" id="inbox-lead-tasks">
+                            {% for task in active_lead_workspace.tasks %}
+                            <div class="note-card task-card {{ 'task-done' if task.status == 'done' else '' }}">
+                                <strong>{{ task.title }}</strong>
+                                <p>{{ task.due_label or 'Today' }} | {{ 'Completed' if task.status == 'done' else 'Open' }}</p>
+                                {% if task.status == 'open' %}
+                                <button class="soft-button task-toggle" type="button" data-user-id="{{ active_user_id }}" data-task-id="{{ task.id }}" data-status="done">Mark Done</button>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <div class="empty-block">No follow-up tasks for this lead yet.</div>
+                            {% endfor %}
+                        </div>
+                    </article>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </section>
+            {% endif %}
+
+            {% if active_page == 'knowledge' %}
+            <section class="content-grid two-column">
+                <article class="panel">
+                    <div class="panel-header">
+                        <h3>Knowledge Uploads</h3>
+                        <span class="panel-note">Reference files</span>
+                    </div>
+                    <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data" class="upload-stack">
+                        <label class="upload-dropzone">
+                            <span class="panel-label">Upload source file</span>
+                            <strong>Drop a document here or browse from disk</strong>
+                            <p>Use clean SOPs, price sheets, FAQs, service notes, and other approved reference material.</p>
+                            <input type="file" name="knowledge_file" accept=".txt,.md,.pdf,.docx" required>
+                        </label>
+                        <button class="primary-button" type="submit">Upload Document</button>
+                    </form>
+                </article>
+
+                <article class="panel">
+                    <div class="panel-header">
+                        <h3>Indexed Files</h3>
+                        <span class="panel-note">{{ knowledge_files|length }} assets</span>
+                    </div>
+                    <div class="knowledge-table">
+                        {% for file in knowledge_files %}
+                        <div class="knowledge-row">
+                            <div>
+                                <strong>{{ file.name }}</strong>
+                                <span>{{ (file.size / 1024)|round(1) }} KB | {{ 'Indexed' if file.converted_exists else 'Pending conversion' }}</span>
+                            </div>
+                            <form action="{{ url_for('delete_file', file_name=file.name) }}" method="post">
+                                <button class="soft-button" type="submit">Remove</button>
+                            </form>
+                        </div>
+                        {% else %}
+                        <div class="empty-block">No documents uploaded yet.</div>
+                        {% endfor %}
+                    </div>
+                </article>
+            </section>
+
+            <section class="content-grid two-column">
+                <article class="panel connect-panel">
+                    <div class="panel-header">
+                        <h3>Business Availability</h3>
+                        <span class="panel-note">Timezone and weekly hours</span>
+                    </div>
+                    <p class="helper-text" id="availability-status-copy">{{ snapshot.availability.status_text }}</p>
+                    <div class="settings-stack">
+                        <label>
+                            <span>Business Timezone</span>
+                            <select id="availability-timezone">
+                                {% for timezone_name in snapshot.timezone_options %}
+                                <option value="{{ timezone_name }}" {{ 'selected' if snapshot.timezone == timezone_name else '' }}>{{ timezone_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+                        <div class="availability-grid">
+                            {% for day_name, config in snapshot.business_hours.items() %}
+                            <div class="availability-card">
+                                <div class="availability-day">
+                                    <strong>{{ day_name|title }}</strong>
+                                    <label class="availability-toggle">
+                                        <input
+                                            type="checkbox"
+                                            class="availability-enabled"
+                                            data-day="{{ day_name }}"
+                                            {% if config.enabled %}checked{% endif %}
+                                        >
+                                        <span>Open</span>
+                                    </label>
+                                </div>
+                                <div class="availability-time-row">
+                                    <label>
+                                        <span>Start</span>
+                                        <input type="time" class="availability-start" data-day="{{ day_name }}" value="{{ config.start }}">
+                                    </label>
+                                    <label>
+                                        <span>End</span>
+                                        <input type="time" class="availability-end" data-day="{{ day_name }}" value="{{ config.end }}">
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="button-row single-action">
+                            <button class="primary-button" id="save-availability" type="button">Save Availability</button>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="panel">
+                    <div class="panel-header">
+                        <h3>Starting Prompt</h3>
+                        <span class="panel-note">First customer reply</span>
+                    </div>
+                    <label>
+                        <span>Greeting Prompt</span>
+                        <textarea id="prompt-greeting" rows="12">{{ public_prompts.greeting }}</textarea>
+                    </label>
+                    <div class="helper-stack">
+                        <div class="info-box">
+                            <strong>What this controls</strong>
+                            <p>This prompt shapes the assistant's first reply, opening tone, and the first questions it asks a new lead.</p>
+                        </div>
+                        <div class="info-box">
+                            <strong>Recommended use</strong>
+                            <p>Keep it short, business-specific, and focused on service scope, location, timing, and the next action.</p>
+                        </div>
+                    </div>
+                    <button class="primary-button prompt-save" data-prompt-name="greeting">Save Greeting Prompt</button>
+                </article>
+            </section>
+            {% endif %}
+
+            {% if active_page == 'automation' %}
+            <section class="content-grid two-column">
+                <article class="panel connect-panel">
+                    <div class="panel-header">
+                        <h3>WhatsApp Connection</h3>
+                        <span class="panel-note">Live session</span>
+                    </div>
+                    <p class="helper-text">Start the session and scan the QR in the browser.</p>
+                    <div class="whatsapp-grid">
+                        <div class="data-card">
+                            <span class="panel-label">Connection State</span>
+                            <strong id="wa-state">{{ whatsapp_status.state }}</strong>
+                        </div>
+                        <div class="data-card">
+                            <span class="panel-label">Session</span>
+                            <strong id="wa-session">{{ 'Connected' if whatsapp_status.connected else 'Not linked' }}</strong>
+                        </div>
+                    </div>
+                    <div class="button-row automation-actions">
+                        <button class="primary-button" id="start-whatsapp">Start WhatsApp</button>
+                        <button class="soft-button" id="stop-whatsapp">Stop WhatsApp</button>
+                    </div>
+                    <div class="button-row single-action automation-secondary-action">
+                        <button class="soft-button" id="reset-whatsapp-session-secondary">Disconnect And Reset</button>
+                    </div>
+                    <div class="qr-panel" id="wa-qr-panel">
+                        <div class="qr-frame" id="wa-qr-frame">
+                            {% if whatsapp_status.qr_path %}
+                            <img id="wa-qr-image" src="{{ url_for('static', filename='generated/whatsapp-qr.svg', v=whatsapp_status.last_event_at or 0) }}" alt="WhatsApp QR code">
+                            {% else %}
+                            <div class="empty-block" id="wa-qr-empty">Start the WhatsApp runtime to generate a QR code here.</div>
+                            {% endif %}
+                        </div>
+                        <p class="helper-text">Scan from WhatsApp Linked Devices. Use Disconnect And Reset to remove this session.</p>
+                    </div>
+                </article>
+
+                <article class="panel">
+                    <div class="panel-header">
+                        <h3>Assistant Controls</h3>
+                        <span class="panel-note">Reply handling</span>
+                    </div>
+                    <div class="settings-stack">
+                        <label>
+                            <span>Assistant Name</span>
+                            <input id="bot-name" type="text" value="{{ snapshot.bot_name }}">
+                        </label>
+                        <div class="button-row automation-actions">
+                            <button class="primary-button" id="save-bot-name">Save Name</button>
+                            <button class="{{ 'danger-button' if snapshot.is_bot_running else 'soft-button' }}" id="toggle-bot">
+                                {{ 'Pause Intake' if snapshot.is_bot_running else 'Resume Intake' }}
+                            </button>
+                        </div>
+                        <div class="reply-toggle-card">
+                            <span class="panel-label">Reply Mode</span>
+                            <div class="segmented-toggle">
+                                <button class="{{ 'primary-button' if snapshot.reply_mode == 'automatic' else 'soft-button' }}" id="mode-automatic" type="button">AI Replies</button>
+                                <button class="{{ 'primary-button' if snapshot.reply_mode == 'manual' else 'soft-button' }}" id="mode-manual" type="button">Human Replies</button>
+                            </div>
+                        </div>
+                        <div class="mode-toggle">
+                            <div class="mode-explainer">
+                                <strong>AI Replies</strong>
+                                <p>The assistant responds automatically to new incoming chats.</p>
+                            </div>
+                            <div class="mode-explainer">
+                                <strong>Human Replies</strong>
+                                <p>The assistant waits and the operator replies from Inbox.</p>
+                            </div>
+                        </div>
+                        <p class="helper-text">
+                            Switch any time. The new mode applies to active conversations immediately.
+                        </p>
+                    </div>
+                </article>
+            </section>
+            {% endif %}
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+</body>
+</html>

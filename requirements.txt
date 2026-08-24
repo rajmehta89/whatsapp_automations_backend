@@ -1,0 +1,9 @@
+neonize
+python-dotenv
+openai
+pdfplumber
+python-docx
+segno
+protobuf
+flask
+gunicorn

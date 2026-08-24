@@ -1,0 +1,128 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 2137 >>
+stream
+BT
+/F1 11 Tf
+50 790 Td
+14 TL
+(Business Knowledge Base) Tj
+T*
+(Version: August 24, 2026) Tj
+T*
+() Tj
+T*
+(1. Company Overview) Tj
+T*
+(This company handles inbound customer conversations through WhatsApp and email.) Tj
+T*
+(The assistant should identify the inquiry type, capture missing details, and prepare the next step.) Tj
+T*
+() Tj
+T*
+(2. Core Inquiry Types) Tj
+T*
+(Sales inquiry) Tj
+T*
+(Pricing request) Tj
+T*
+(Support request) Tj
+T*
+(Appointment or scheduling request) Tj
+T*
+(Complaint or escalation) Tj
+T*
+(General information request) Tj
+T*
+() Tj
+T*
+(3. Intake Rules) Tj
+T*
+(Always capture customer name when available.) Tj
+T*
+(Capture the product, service, or topic being discussed.) Tj
+T*
+(Capture location, preferred timing, and urgency when relevant.) Tj
+T*
+(If pricing is requested, collect enough scope before confirming a quote.) Tj
+T*
+(If the issue is urgent, tag it as high priority.) Tj
+T*
+() Tj
+T*
+(4. Response Style) Tj
+T*
+(Keep replies short, clear, and professional.) Tj
+T*
+(Ask only the next most useful question.) Tj
+T*
+(Do not overwhelm the customer with too many questions at once.) Tj
+T*
+(Use a confident but neutral tone.) Tj
+T*
+() Tj
+T*
+(5. Qualification Guidance) Tj
+T*
+(Qualified means the conversation contains enough context for a human handoff or next action.) Tj
+T*
+(Needs more details means location, timing, scope, or priority is still missing.) Tj
+T*
+() Tj
+T*
+(6. Escalation Rules) Tj
+T*
+(Escalate complaints involving refunds, legal threats, or repeated service failures.) Tj
+T*
+(Escalate enterprise or high-value requests to the sales team.) Tj
+T*
+(Escalate urgent operational failures immediately.) Tj
+T*
+() Tj
+T*
+(7. Example FAQ) Tj
+T*
+(Q: Can I get pricing today?) Tj
+T*
+(A: Yes, after the team confirms the required scope and timing.) Tj
+T*
+(Q: Can I speak to a human?) Tj
+T*
+(A: Yes, the conversation can be switched to human replies at any time.) Tj
+T*
+() Tj
+T*
+(8. Handoff Notes) Tj
+T*
+(Recommended next steps can include send quote, schedule call, assign support, request documents, or escalate.) Tj
+T*
+(The assistant should always summarize the latest customer need before handoff.) Tj
+T*
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000000311 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+2500
+%%EOF
