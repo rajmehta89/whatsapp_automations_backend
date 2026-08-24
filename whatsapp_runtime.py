@@ -53,6 +53,32 @@ class WhatsAppRuntime:
         if not client:
             return
 
+        with self._lock:
+            current_state = self._status.get("state")
+            started_at = self._status.get("started_at")
+            qr_available = self._status.get("qr_available")
+            last_error = self._status.get("last_error")
+
+        # Avoid blocking state probes while the runtime is still trying to
+        # initialize or while a QR is already waiting to be scanned.
+        if current_state in {"starting", "awaiting_qr_scan"}:
+            if (
+                current_state == "starting"
+                and started_at
+                and not qr_available
+                and not last_error
+                and int(time.time()) - int(started_at) > self.STARTUP_TIMEOUT_SECONDS
+            ):
+                self._set_status(
+                    state="error",
+                    connected=False,
+                    last_error=(
+                        "WhatsApp runtime started but no QR was generated within "
+                        f"{self.STARTUP_TIMEOUT_SECONDS} seconds. Reset the session and try again."
+                    ),
+                )
+            return
+
         try:
             is_logged_in = bool(client.is_logged_in())
         except Exception:
@@ -73,12 +99,6 @@ class WhatsAppRuntime:
             )
             return
 
-        with self._lock:
-            started_at = self._status.get("started_at")
-            current_state = self._status.get("state")
-            qr_available = self._status.get("qr_available")
-            last_error = self._status.get("last_error")
-
         if (
             current_state == "starting"
             and started_at
@@ -96,7 +116,6 @@ class WhatsAppRuntime:
             )
 
     def get_status(self) -> dict[str, Any]:
-        self._refresh_client_state()
         with self._lock:
             return dict(self._status)
 
