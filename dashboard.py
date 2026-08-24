@@ -38,6 +38,7 @@ from whatsapp_runtime import runtime as whatsapp_runtime
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
+ASSET_VERSION = str(int(datetime.now().timestamp()))
 
 
 def page_url(endpoint: str, user_id: str | None = None, **kwargs) -> str:
@@ -92,6 +93,7 @@ def build_page_context(active_page: str) -> dict:
         "auth_email": os.getenv("WORKSPACE_AUTH_EMAIL", "rajm267747@gmail.com"),
         "auth_password": os.getenv("WORKSPACE_AUTH_PASSWORD", "WhatsAppTest"),
         "api_base_url": os.getenv("PUBLIC_BACKEND_URL", "https://whatsapp-automations-backend.onrender.com"),
+        "asset_version": ASSET_VERSION,
         "business": get_business_profile(),
         "snapshot": snapshot,
         "whatsapp_status": whatsapp_runtime.get_status(),
