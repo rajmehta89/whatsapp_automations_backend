@@ -44,6 +44,133 @@ body {
         linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
 }
 
+.auth-gate {
+    min-height: 100vh;
+    padding: 28px 16px;
+}
+
+.auth-shell {
+    width: min(1280px, 100%);
+    margin: 0 auto;
+    min-height: calc(100vh - 56px);
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(340px, 0.85fr);
+    gap: 22px;
+    align-items: center;
+}
+
+.auth-panel,
+.auth-card {
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(16px);
+}
+
+.auth-panel-copy {
+    padding: 34px;
+    border-radius: 32px;
+    background:
+        radial-gradient(circle at top right, rgba(215, 161, 74, 0.18), transparent 30%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(244, 250, 247, 0.95));
+}
+
+.auth-panel-copy h1,
+.auth-card h2 {
+    margin: 10px 0 0;
+    font-family: "Sora", sans-serif;
+    letter-spacing: -0.03em;
+}
+
+.auth-panel-copy h1 {
+    font-size: clamp(34px, 4vw, 58px);
+    line-height: 0.98;
+}
+
+.auth-panel-copy p {
+    margin: 14px 0 0;
+    max-width: 620px;
+    color: var(--muted);
+    line-height: 1.72;
+    font-size: 15px;
+}
+
+.auth-highlights {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 28px;
+}
+
+.auth-highlight {
+    padding: 20px;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-soft);
+}
+
+.auth-highlight strong {
+    display: block;
+    font-family: "Sora", sans-serif;
+    letter-spacing: -0.03em;
+}
+
+.auth-highlight p {
+    margin: 10px 0 0;
+    color: var(--muted);
+    line-height: 1.65;
+}
+
+.auth-panel-form {
+    display: flex;
+    justify-content: center;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+.auth-card {
+    width: min(100%, 460px);
+    padding: 28px;
+    border-radius: 30px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 251, 255, 0.96));
+}
+
+.auth-card h2 {
+    font-size: 30px;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 18px;
+}
+
+.remember-row {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.remember-row input {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    accent-color: var(--primary);
+}
+
+.auth-error {
+    margin: 0;
+    color: var(--danger);
+    font-size: 13px;
+    font-weight: 700;
+}
+
 .app-shell {
     display: grid;
     grid-template-columns: 296px minmax(0, 1fr);
@@ -65,6 +192,29 @@ body {
     top: 0;
     min-height: 100vh;
     z-index: 30;
+}
+
+.sidebar-footer {
+    margin-top: auto;
+    padding-top: 12px;
+}
+
+.sidebar-signout {
+    width: calc(100% + 40px);
+    margin-left: -20px;
+    margin-bottom: -28px;
+    min-height: 58px;
+    border: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0;
+    background: rgba(255, 255, 255, 0.08);
+    color: #f8fbff;
+    box-shadow: none;
+}
+
+.sidebar-signout:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
 }
 
 .mobile-nav-backdrop,
@@ -1241,6 +1391,15 @@ button:disabled {
 }
 
 @media (max-width: 1080px) {
+    .auth-shell {
+        grid-template-columns: 1fr;
+        align-items: start;
+    }
+
+    .auth-highlights {
+        grid-template-columns: 1fr;
+    }
+
     .app-shell {
         grid-template-columns: 1fr;
     }
@@ -1269,6 +1428,16 @@ button:disabled {
 }
 
 @media (max-width: 760px) {
+    .auth-gate {
+        padding: 10px;
+    }
+
+    .auth-panel-copy,
+    .auth-card {
+        padding: 22px;
+        border-radius: 24px;
+    }
+
     .main-panel,
     .sidebar {
         padding: 18px;
@@ -1324,6 +1493,13 @@ button:disabled {
 
     .topbar h2 {
         font-size: 28px;
+    }
+
+    .sidebar-signout {
+        width: calc(100% + 36px);
+        margin-left: -18px;
+        margin-bottom: -18px;
+        min-height: 52px;
     }
 
     .panel,

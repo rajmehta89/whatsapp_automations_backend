@@ -10,6 +10,79 @@ async function postJson(url, payload) {
     return response.json();
 }
 
+const workspaceAuthConfig = window.workspaceAuthConfig || {};
+const workspaceSessionKey = "wa_workspace_auth_v1";
+const workspaceRememberedEmailKey = "wa_workspace_email_v1";
+
+function isWorkspaceAuthenticated() {
+    return localStorage.getItem(workspaceSessionKey) === "true";
+}
+
+function showWorkspaceApp() {
+    document.getElementById("auth-gate")?.setAttribute("hidden", "");
+    document.getElementById("app-shell")?.removeAttribute("hidden");
+}
+
+function showWorkspaceLogin() {
+    document.getElementById("app-shell")?.setAttribute("hidden", "");
+    document.getElementById("auth-gate")?.removeAttribute("hidden");
+    document.body.style.overflow = "";
+}
+
+function bootstrapWorkspaceAuth() {
+    const loginForm = document.getElementById("workspace-login-form");
+    const emailInput = document.getElementById("workspace-email-input");
+    const passwordInput = document.getElementById("workspace-password-input");
+    const rememberInput = document.getElementById("workspace-remember-input");
+    const loginError = document.getElementById("workspace-login-error");
+    const signoutButton = document.getElementById("workspace-signout");
+
+    const rememberedEmail = localStorage.getItem(workspaceRememberedEmailKey);
+    if (emailInput && rememberedEmail) {
+        emailInput.value = rememberedEmail;
+    }
+
+    loginForm?.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const email = emailInput?.value.trim().toLowerCase() || "";
+        const password = passwordInput?.value || "";
+        const validEmail = String(workspaceAuthConfig.email || "").trim().toLowerCase();
+        const validPassword = String(workspaceAuthConfig.password || "");
+
+        if (email !== validEmail || password !== validPassword) {
+            if (loginError) {
+                loginError.hidden = false;
+            }
+            return;
+        }
+
+        if (loginError) {
+            loginError.hidden = true;
+        }
+        localStorage.setItem(workspaceSessionKey, "true");
+        if (rememberInput?.checked) {
+            localStorage.setItem(workspaceRememberedEmailKey, emailInput?.value.trim() || "");
+        } else {
+            localStorage.removeItem(workspaceRememberedEmailKey);
+        }
+        showWorkspaceApp();
+    });
+
+    signoutButton?.addEventListener("click", () => {
+        localStorage.removeItem(workspaceSessionKey);
+        if (passwordInput) {
+            passwordInput.value = "";
+        }
+        showWorkspaceLogin();
+    });
+
+    if (isWorkspaceAuthenticated()) {
+        showWorkspaceApp();
+    } else {
+        showWorkspaceLogin();
+    }
+}
+
 async function fetchJson(url) {
     const response = await fetch(url);
     if (!response.ok) {
@@ -773,6 +846,7 @@ document.getElementById("reset-conversation")?.addEventListener("click", async (
 refreshWhatsAppStatus();
 renderReplyMode(document.getElementById("mode-manual")?.classList.contains("primary-button") ? "manual" : "automatic");
 setSidebarOpen(false);
+bootstrapWorkspaceAuth();
 renderLeadTags("lead-tags", Array.from(document.querySelectorAll("#lead-tags [data-tag]")).map((node) => node.dataset.tag));
 renderLeadTags("inbox-lead-tags", Array.from(document.querySelectorAll("#inbox-lead-tags .chip")).map((node) => node.textContent.trim().replaceAll(" ", "_")));
 renderLeadTasks("lead-tasks", Array.from(document.querySelectorAll("#lead-tasks .task-card")).map((node) => ({

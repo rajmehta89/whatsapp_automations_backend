@@ -10,7 +10,49 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
 </head>
 <body>
-    <div class="app-shell" id="app-shell">
+    <div class="auth-gate" id="auth-gate">
+        <div class="auth-shell">
+            <section class="auth-panel auth-panel-copy">
+                <span class="eyebrow">Client Access</span>
+                <h1>WhatsApp Operations Workspace</h1>
+                <p>Sign in to open the live CRM workspace, inbox, lead pipeline, automation controls, and knowledge settings.</p>
+                <div class="auth-highlights">
+                    <div class="auth-highlight">
+                        <strong>Lead CRM</strong>
+                        <p>Lead score, readiness, notes, tags, and follow-up tasks.</p>
+                    </div>
+                    <div class="auth-highlight">
+                        <strong>Live Automation</strong>
+                        <p>WhatsApp connection, reply controls, availability rules, and prompt management.</p>
+                    </div>
+                </div>
+            </section>
+            <section class="auth-panel auth-panel-form">
+                <div class="auth-card">
+                    <span class="eyebrow">Secure Login</span>
+                    <h2>Access Dashboard</h2>
+                    <form id="workspace-login-form" class="auth-form">
+                        <label>
+                            <span>Email</span>
+                            <input id="workspace-email-input" type="email" autocomplete="email" required>
+                        </label>
+                        <label>
+                            <span>Password</span>
+                            <input id="workspace-password-input" type="password" autocomplete="current-password" required>
+                        </label>
+                        <label class="remember-row">
+                            <input id="workspace-remember-input" type="checkbox" checked>
+                            <span>Remember this browser</span>
+                        </label>
+                        <button class="primary-button" type="submit">Login To Workspace</button>
+                        <p class="auth-error" id="workspace-login-error" hidden>Invalid email or password.</p>
+                    </form>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <div class="app-shell" id="app-shell" hidden>
         <button class="mobile-nav-backdrop" id="mobile-nav-backdrop" type="button" aria-label="Close navigation"></button>
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-brand">
@@ -58,6 +100,10 @@
                     </div>
                 </a>
             </nav>
+
+            <div class="sidebar-footer">
+                <button class="sidebar-signout" id="workspace-signout" type="button">Sign Out</button>
+            </div>
         </aside>
 
         <main class="main-panel">
@@ -924,6 +970,12 @@
         </main>
     </div>
 
+    <script>
+        window.workspaceAuthConfig = {
+            email: {{ auth_email|tojson }},
+            password: {{ auth_password|tojson }}
+        };
+    </script>
     <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
 </body>
 </html>

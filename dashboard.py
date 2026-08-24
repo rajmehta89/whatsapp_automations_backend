@@ -67,6 +67,8 @@ def build_page_context(active_page: str) -> dict:
     recent_conversations = conversations[:6]
     return {
         "active_page": active_page,
+        "auth_email": os.getenv("WORKSPACE_AUTH_EMAIL", "rajm267747@gmail.com"),
+        "auth_password": os.getenv("WORKSPACE_AUTH_PASSWORD", "WhatsAppTest"),
         "business": get_business_profile(),
         "snapshot": snapshot,
         "whatsapp_status": whatsapp_runtime.get_status(),
