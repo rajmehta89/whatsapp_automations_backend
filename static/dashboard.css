@@ -1094,6 +1094,37 @@ textarea {
     display: block;
 }
 
+.runtime-diagnostics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.runtime-diagnostic-card {
+    padding: 16px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(248, 251, 255, 0.9));
+    border: 1px solid var(--line-strong);
+}
+
+.runtime-diagnostic-card p {
+    margin: 8px 0 0;
+    color: var(--text);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.runtime-diagnostic-error {
+    background: linear-gradient(180deg, rgba(255, 245, 245, 0.96), rgba(255, 250, 250, 0.94));
+}
+
+.runtime-diagnostics.has-error .runtime-diagnostic-error {
+    border-color: rgba(207, 62, 53, 0.22);
+    box-shadow: 0 12px 28px rgba(207, 62, 53, 0.08);
+}
+
 .helper-text {
     margin: 12px 0 0;
     color: var(--muted);
@@ -1472,6 +1503,7 @@ button:disabled {
     .button-row,
     .metrics-grid,
     .whatsapp-grid,
+    .runtime-diagnostics,
     .mode-toggle,
     .segmented-toggle,
     .tag-entry,

@@ -349,6 +349,11 @@ function renderAvailabilitySummary(summary) {
 function renderWhatsAppStatus(status) {
     const stateEl = document.getElementById("wa-state");
     const sessionEl = document.getElementById("wa-session");
+    const qrStatusEl = document.getElementById("wa-qr-status");
+    const phoneHintEl = document.getElementById("wa-phone-hint");
+    const runtimeDetailEl = document.getElementById("wa-runtime-detail");
+    const lastErrorEl = document.getElementById("wa-last-error");
+    const diagnosticsEl = document.getElementById("wa-runtime-diagnostics");
     const pill = document.getElementById("whatsapp-connection-pill");
     const frame = document.getElementById("wa-qr-frame");
     const overviewFrame = document.getElementById("wa-qr-frame-overview");
@@ -366,6 +371,31 @@ function renderWhatsAppStatus(status) {
     if (sessionEl) {
         sessionEl.textContent = status.connected ? "Connected" : "Not linked";
     }
+    if (qrStatusEl) {
+        qrStatusEl.textContent = status.connected
+            ? "Connected"
+            : status.qr_url
+                ? "Ready to scan"
+                : status.state === "starting"
+                    ? "Starting runtime"
+                    : "No QR available";
+    }
+    if (phoneHintEl) {
+        phoneHintEl.textContent = textOrFallback(status.phone_hint, "No device detected yet");
+    }
+    if (runtimeDetailEl) {
+        const details = [];
+        details.push(`State: ${textOrFallback(status.state, "stopped")}`);
+        details.push(`Connected: ${status.connected ? "Yes" : "No"}`);
+        details.push(`QR Available: ${status.qr_url ? "Yes" : "No"}`);
+        runtimeDetailEl.textContent = details.join(" | ");
+    }
+    if (lastErrorEl) {
+        lastErrorEl.textContent = textOrFallback(status.last_error, "No runtime error reported yet.");
+    }
+    if (diagnosticsEl) {
+        diagnosticsEl.classList.toggle("has-error", Boolean(status.last_error));
+    }
     if (pill) {
         pill.classList.toggle("live", Boolean(status.connected));
         pill.classList.toggle("paused", !status.connected);
@@ -378,7 +408,13 @@ function renderWhatsAppStatus(status) {
     if (automationCopy) {
         automationCopy.textContent = status.connected
             ? "The live session is active. You can keep automatic replies on or switch to manual takeover."
-            : "Connect a device, choose reply mode, and manage the live session here.";
+            : status.last_error
+                ? `Runtime error: ${status.last_error}`
+                : status.state === "starting"
+                    ? "Runtime started. Waiting for the WhatsApp QR event."
+                    : status.qr_url
+                        ? "QR is ready. Scan it from WhatsApp Linked Devices."
+                        : "Connect a device, choose reply mode, and manage the live session here.";
     }
     if (overviewCopy) {
         overviewCopy.textContent = status.connected
@@ -388,6 +424,10 @@ function renderWhatsAppStatus(status) {
 
     const qrHtml = status.qr_url && !status.connected
         ? `<img id="wa-qr-image" src="${status.qr_url}" alt="WhatsApp QR code">`
+        : status.last_error
+            ? `<div class="empty-block">QR not available. Runtime error: ${status.last_error}</div>`
+        : status.state === "starting"
+            ? '<div class="empty-block" id="wa-qr-empty">Runtime started. Waiting for QR generation...</div>'
         : !status.connected
             ? '<div class="empty-block" id="wa-qr-empty">Start the WhatsApp runtime to generate a QR code here.</div>'
             : '<div class="empty-block">WhatsApp is connected. Incoming messages will sync here.</div>';
@@ -398,6 +438,10 @@ function renderWhatsAppStatus(status) {
     if (overviewFrame) {
         overviewFrame.innerHTML = status.qr_url && !status.connected
             ? `<img id="wa-qr-image-overview" src="${status.qr_url}" alt="WhatsApp QR code">`
+            : status.last_error
+                ? `<div class="empty-block">QR not available. Runtime error: ${status.last_error}</div>`
+            : status.state === "starting"
+                ? '<div class="empty-block">Runtime started. Waiting for QR generation...</div>'
             : !status.connected
                 ? '<div class="empty-block">Click Connect WhatsApp to generate the QR here.</div>'
                 : '<div class="empty-block">WhatsApp is connected. You can move to Inbox or Automation now.</div>';

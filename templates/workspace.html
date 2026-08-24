@@ -907,6 +907,14 @@
                             <span class="panel-label">Session</span>
                             <strong id="wa-session">{{ 'Connected' if whatsapp_status.connected else 'Not linked' }}</strong>
                         </div>
+                        <div class="data-card">
+                            <span class="panel-label">QR Status</span>
+                            <strong id="wa-qr-status">{{ 'Ready to scan' if whatsapp_status.qr_available else 'Waiting to start' }}</strong>
+                        </div>
+                        <div class="data-card">
+                            <span class="panel-label">Phone Hint</span>
+                            <strong id="wa-phone-hint">{{ whatsapp_status.phone_hint or 'No device detected yet' }}</strong>
+                        </div>
                     </div>
                     <div class="button-row automation-actions">
                         <button class="primary-button" id="start-whatsapp">Start WhatsApp</button>
@@ -924,6 +932,16 @@
                             {% endif %}
                         </div>
                         <p class="helper-text">Scan from WhatsApp Linked Devices. Use Disconnect And Reset to remove this session.</p>
+                    </div>
+                    <div class="runtime-diagnostics" id="wa-runtime-diagnostics">
+                        <div class="runtime-diagnostic-card">
+                            <span class="panel-label">Runtime Detail</span>
+                            <p id="wa-runtime-detail">{{ whatsapp_status.state }}</p>
+                        </div>
+                        <div class="runtime-diagnostic-card runtime-diagnostic-error">
+                            <span class="panel-label">Last Error</span>
+                            <p id="wa-last-error">{{ whatsapp_status.last_error or 'No runtime error reported yet.' }}</p>
+                        </div>
                     </div>
                 </article>
 
