@@ -44,9 +44,19 @@ body {
         linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
 }
 
+[hidden] {
+    display: none !important;
+}
+
+body.auth-locked {
+    height: 100vh;
+    overflow: hidden;
+}
+
 .auth-gate {
-    min-height: 100vh;
+    height: 100vh;
     padding: 28px 16px;
+    overflow: auto;
 }
 
 .auth-shell {
@@ -175,6 +185,7 @@ body {
     display: grid;
     grid-template-columns: 296px minmax(0, 1fr);
     min-height: 100vh;
+    width: 100%;
     position: relative;
 }
 

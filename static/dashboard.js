@@ -19,14 +19,16 @@ function isWorkspaceAuthenticated() {
 }
 
 function showWorkspaceApp() {
+    document.body.classList.remove("auth-locked");
     document.getElementById("auth-gate")?.setAttribute("hidden", "");
     document.getElementById("app-shell")?.removeAttribute("hidden");
 }
 
 function showWorkspaceLogin() {
+    document.body.classList.add("auth-locked");
     document.getElementById("app-shell")?.setAttribute("hidden", "");
     document.getElementById("auth-gate")?.removeAttribute("hidden");
-    document.body.style.overflow = "";
+    setSidebarOpen(false);
 }
 
 function bootstrapWorkspaceAuth() {
