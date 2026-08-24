@@ -61,6 +61,21 @@ def bootstrap() -> None:
     init_db()
 
 
+@app.after_request
+def add_cors_headers(response):
+    allowed_origins = {
+        "https://waintake.vercel.app",
+        "https://whatsapp-automations-backend.onrender.com",
+    }
+    origin = request.headers.get("Origin", "")
+    if origin in allowed_origins:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Vary"] = "Origin"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    return response
+
+
 def build_page_context(active_page: str) -> dict:
     bootstrap()
     conversations = list_conversations()
@@ -76,6 +91,7 @@ def build_page_context(active_page: str) -> dict:
         "active_page": active_page,
         "auth_email": os.getenv("WORKSPACE_AUTH_EMAIL", "rajm267747@gmail.com"),
         "auth_password": os.getenv("WORKSPACE_AUTH_PASSWORD", "WhatsAppTest"),
+        "api_base_url": os.getenv("PUBLIC_BACKEND_URL", "https://whatsapp-automations-backend.onrender.com"),
         "business": get_business_profile(),
         "snapshot": snapshot,
         "whatsapp_status": whatsapp_runtime.get_status(),
@@ -95,6 +111,12 @@ def build_page_context(active_page: str) -> dict:
 @app.get("/")
 def overview():
     return render_template("workspace.html", **build_page_context("overview"))
+
+
+@app.route("/", defaults={"path": ""}, methods=["OPTIONS"])
+@app.route("/<path:path>", methods=["OPTIONS"])
+def cors_preflight(path: str):
+    return ("", 204)
 
 
 @app.get("/inbox")

@@ -993,6 +993,7 @@
             email: {{ auth_email|tojson }},
             password: {{ auth_password|tojson }}
         };
+        window.workspaceApiBaseUrl = {{ api_base_url|tojson }};
     </script>
     <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
 </body>

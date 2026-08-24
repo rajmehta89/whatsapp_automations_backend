@@ -1,5 +1,17 @@
+const workspaceApiBaseUrl = (window.workspaceApiBaseUrl || "").replace(/\/+$/, "");
+
+function apiUrl(url) {
+    if (!url || /^https?:\/\//i.test(url)) {
+        return url;
+    }
+    if (!url.startsWith("/")) {
+        return url;
+    }
+    return `${workspaceApiBaseUrl}${url}`;
+}
+
 async function postJson(url, payload) {
-    const response = await fetch(url, {
+    const response = await fetch(apiUrl(url), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -86,7 +98,7 @@ function bootstrapWorkspaceAuth() {
 }
 
 async function fetchJson(url) {
-    const response = await fetch(url);
+    const response = await fetch(apiUrl(url));
     if (!response.ok) {
         throw new Error(`Request failed: ${response.status}`);
     }
