@@ -40,6 +40,12 @@ app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
 
 
+def page_url(endpoint: str, user_id: str | None = None, **kwargs) -> str:
+    if user_id:
+        kwargs["user_id"] = user_id
+    return url_for(endpoint, **kwargs)
+
+
 def _format_timestamp(value):
     if not value:
         return "-"
@@ -47,6 +53,7 @@ def _format_timestamp(value):
 
 
 app.jinja_env.filters["datetimeformat"] = _format_timestamp
+app.jinja_env.globals["page_url"] = page_url
 
 
 def bootstrap() -> None:

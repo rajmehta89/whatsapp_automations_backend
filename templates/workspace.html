@@ -64,35 +64,35 @@
             </div>
 
             <nav class="sidebar-nav">
-                <a class="nav-link {{ 'active' if active_page == 'overview' else '' }}" href="{{ url_for('overview', user_id=active_user_id) }}">
+                <a class="nav-link {{ 'active' if active_page == 'overview' else '' }}" href="{{ page_url('overview', active_user_id) }}">
                     <span class="nav-icon">OV</span>
                     <div>
                         <strong>Overview</strong>
                         <small>Pipeline, metrics, intake status</small>
                     </div>
                 </a>
-                <a class="nav-link {{ 'active' if active_page == 'leads' else '' }}" href="{{ url_for('leads', user_id=active_user_id) }}">
+                <a class="nav-link {{ 'active' if active_page == 'leads' else '' }}" href="{{ page_url('leads', active_user_id) }}">
                     <span class="nav-icon">LD</span>
                     <div>
                         <strong>Leads</strong>
                         <small>Customers, status, lead details</small>
                     </div>
                 </a>
-                <a class="nav-link {{ 'active' if active_page == 'inbox' else '' }}" href="{{ url_for('inbox', user_id=active_user_id) }}">
+                <a class="nav-link {{ 'active' if active_page == 'inbox' else '' }}" href="{{ page_url('inbox', active_user_id) }}">
                     <span class="nav-icon">IN</span>
                     <div>
                         <strong>Inbox</strong>
                         <small>WhatsApp lead conversations</small>
                     </div>
                 </a>
-                <a class="nav-link {{ 'active' if active_page == 'knowledge' else '' }}" href="{{ url_for('knowledge', user_id=active_user_id) }}">
+                <a class="nav-link {{ 'active' if active_page == 'knowledge' else '' }}" href="{{ page_url('knowledge', active_user_id) }}">
                     <span class="nav-icon">KB</span>
                     <div>
                         <strong>Knowledge</strong>
                         <small>Service docs, SOPs, price files</small>
                     </div>
                 </a>
-                <a class="nav-link {{ 'active' if active_page == 'automation' else '' }}" href="{{ url_for('automation', user_id=active_user_id) }}">
+                <a class="nav-link {{ 'active' if active_page == 'automation' else '' }}" href="{{ page_url('automation', active_user_id) }}">
                     <span class="nav-icon">WA</span>
                     <div>
                         <strong>Automation</strong>
@@ -530,8 +530,8 @@
                         </div>
                     </div>
                     <div class="cta-strip">
-                        <a class="primary-button cta-link" href="{{ url_for('inbox', user_id=active_user_id) }}">Open In Inbox</a>
-                        <a class="soft-button cta-link" href="{{ url_for('automation', user_id=active_user_id) }}">Open Automation</a>
+                        <a class="primary-button cta-link" href="{{ page_url('inbox', active_user_id) }}">Open In Inbox</a>
+                        <a class="soft-button cta-link" href="{{ page_url('automation', active_user_id) }}">Open Automation</a>
                     </div>
                     {% else %}
                     <div class="empty-block">Select a lead to view its details.</div>
