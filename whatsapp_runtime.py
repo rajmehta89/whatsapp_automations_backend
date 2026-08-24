@@ -48,6 +48,32 @@ class WhatsAppRuntime:
         if os.path.exists(qr_path):
             os.remove(qr_path)
 
+    def _startup_watchdog(self, expected_started_at: int) -> None:
+        time.sleep(self.STARTUP_TIMEOUT_SECONDS)
+        with self._lock:
+            current_state = self._status.get("state")
+            started_at = self._status.get("started_at")
+            qr_available = self._status.get("qr_available")
+            connected = self._status.get("connected")
+            last_error = self._status.get("last_error")
+
+        if (
+            current_state == "starting"
+            and started_at == expected_started_at
+            and not qr_available
+            and not connected
+            and not last_error
+        ):
+            self._set_status(
+                state="error",
+                connected=False,
+                last_error=(
+                    "WhatsApp runtime started but no QR was generated within "
+                    f"{self.STARTUP_TIMEOUT_SECONDS} seconds. This usually means the "
+                    "cloud runtime did not reach the QR callback."
+                ),
+            )
+
     def _refresh_client_state(self) -> None:
         client = self._client
         if not client:
@@ -156,6 +182,7 @@ class WhatsAppRuntime:
             self._stop_requested = False
             self._thread = threading.Thread(target=self._run, name="whatsapp-runtime", daemon=True)
             self._thread.start()
+            started_at = int(time.time())
             self._status.update(
                 {
                     "state": "starting",
@@ -163,9 +190,15 @@ class WhatsAppRuntime:
                     "qr_available": False,
                     "qr_path": None,
                     "last_error": None,
-                    "started_at": int(time.time()),
+                    "started_at": started_at,
                 }
             )
+            threading.Thread(
+                target=self._startup_watchdog,
+                args=(started_at,),
+                name="whatsapp-startup-watchdog",
+                daemon=True,
+            ).start()
             return dict(self._status)
 
     def stop(self) -> dict[str, Any]:
