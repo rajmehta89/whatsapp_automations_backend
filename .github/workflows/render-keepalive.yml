@@ -9,10 +9,10 @@ jobs:
   ping-backend:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Render backend root
+      - name: Ping Render backend health endpoint
         run: |
           curl --fail --silent --show-error --max-time 30 \
-            "https://whatsapp-automations-backend.onrender.com/" > /dev/null
+            "https://whatsapp-automations-backend.onrender.com/healthz" > /dev/null
 
       - name: Ping WhatsApp status endpoint
         run: |

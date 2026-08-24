@@ -140,6 +140,11 @@ def api_whatsapp_status():
     return jsonify(status)
 
 
+@app.get("/healthz")
+def healthz():
+    return jsonify({"ok": True, "service": "whatsapp-automations-backend"})
+
+
 @app.post("/api/whatsapp/start")
 def api_whatsapp_start():
     return jsonify(whatsapp_runtime.start())

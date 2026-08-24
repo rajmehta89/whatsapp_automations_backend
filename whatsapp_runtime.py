@@ -18,6 +18,8 @@ from whatsapp import on_history_sync, on_message
 
 
 class WhatsAppRuntime:
+    STARTUP_TIMEOUT_SECONDS = 45
+
     def __init__(self) -> None:
         self._lock = threading.Lock()
         self._thread: threading.Thread | None = None
@@ -69,6 +71,29 @@ class WhatsAppRuntime:
                 qr_path=None,
                 last_error=None,
             )
+            return
+
+        with self._lock:
+            started_at = self._status.get("started_at")
+            current_state = self._status.get("state")
+            qr_available = self._status.get("qr_available")
+            last_error = self._status.get("last_error")
+
+        if (
+            current_state == "starting"
+            and started_at
+            and not qr_available
+            and not last_error
+            and int(time.time()) - int(started_at) > self.STARTUP_TIMEOUT_SECONDS
+        ):
+            self._set_status(
+                state="error",
+                connected=False,
+                last_error=(
+                    "WhatsApp runtime started but no QR was generated within "
+                    f"{self.STARTUP_TIMEOUT_SECONDS} seconds. Reset the session and try again."
+                ),
+            )
 
     def get_status(self) -> dict[str, Any]:
         self._refresh_client_state()
@@ -80,11 +105,18 @@ class WhatsAppRuntime:
             thread_is_alive = bool(self._thread and self._thread.is_alive())
             current_state = self._status.get("state")
             client = self._client
+            started_at = self._status.get("started_at")
 
-        if thread_is_alive and current_state not in {"logged_out", "error", "disconnected"}:
+        startup_expired = bool(
+            current_state == "starting"
+            and started_at
+            and int(time.time()) - int(started_at) > self.STARTUP_TIMEOUT_SECONDS
+        )
+
+        if thread_is_alive and current_state not in {"logged_out", "error", "disconnected"} and not startup_expired:
             return self.get_status()
 
-        if current_state in {"logged_out", "error"}:
+        if current_state in {"logged_out", "error"} or startup_expired:
             self._stop_requested = True
             if client:
                 try:
